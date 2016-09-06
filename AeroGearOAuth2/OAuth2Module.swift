@@ -43,10 +43,10 @@ enum AuthorizationState {
 Parent class of any OAuth2 module implementing generic OAuth2 authorization flow.
 */
 public class OAuth2Module: AuthzModule {
-    let config: Config
-    var http: Http
+    public let config: Config
+    public var http: Http
 
-    var oauth2Session: OAuth2Session
+    public var oauth2Session: OAuth2Session
     var applicationLaunchNotificationObserver: NSObjectProtocol?
     var applicationDidBecomeActiveNotificationObserver: NSObjectProtocol?
     var state: AuthorizationState
