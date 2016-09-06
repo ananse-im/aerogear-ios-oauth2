@@ -79,11 +79,25 @@ public class KeychainWrap {
 
         // Instantiate a new default keychain query
         let keychainQuery = NSMutableDictionary()
-        if let groupId = self.groupId {
-            keychainQuery[kSecAttrAccessGroup as String] = groupId
-        }
+        #if (arch(i386) || arch(x86_64)) && os(iOS)
+            // Ignore the access group if running on the iPhone simulator.
+            //
+            // Apps that are built for the simulator aren't signed, so there's no keychain access group
+            // for the simulator to check. This means that all apps can see all keychain items when run
+            // on the simulator.
+            //
+            // If a SecItem contains an access group attribute, SecItemAdd and SecItemUpdate on the
+            // simulator will return -25243 (errSecNoAccessForItem).
+        #else
+            if let groupId = self.groupId {
+                keychainQuery[kSecAttrAccessGroup as String] = groupId
+            }
+        #endif
+        
+        
         keychainQuery[kSecClass as String] = kSecClassGenericPassword
         keychainQuery[kSecAttrService as String] = self.serviceIdentifier
+        keychainQuery[kSecAttrGeneric as String] = key + "_" + tokenType.rawValue
         keychainQuery[kSecAttrAccount as String] = key + "_" + tokenType.rawValue
         keychainQuery[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
 
@@ -98,7 +112,7 @@ public class KeychainWrap {
 
                 let statusUpdate: OSStatus = SecItemUpdate(keychainQuery, attributesToUpdate)
                 if (statusUpdate != errSecSuccess) {
-                    print("tokens not updated")
+                    print("tokens not updated \(statusUpdate)")
                     return false
                 }
             } else { // revoked token or newly installed app, clear KC
@@ -108,7 +122,7 @@ public class KeychainWrap {
             keychainQuery[kSecValueData as String] = dataFromString!
             let statusAdd: OSStatus = SecItemAdd(keychainQuery, nil)
             if(statusAdd != errSecSuccess) {
-                print("tokens not saved")
+                print("tokens not saved \(statusAdd)")
                 return false
             }
         } else { // error case
@@ -126,9 +140,20 @@ public class KeychainWrap {
     */
     public func delete(key: String, tokenType: TokenType) -> Bool {
         let keychainQuery = NSMutableDictionary()
-        if let groupId = self.groupId {
-            keychainQuery[kSecAttrAccessGroup as String] = groupId
-        }
+        #if (arch(i386) || arch(x86_64)) && os(iOS)
+            // Ignore the access group if running on the iPhone simulator.
+            //
+            // Apps that are built for the simulator aren't signed, so there's no keychain access group
+            // for the simulator to check. This means that all apps can see all keychain items when run
+            // on the simulator.
+            //
+            // If a SecItem contains an access group attribute, SecItemAdd and SecItemUpdate on the
+            // simulator will return -25243 (errSecNoAccessForItem).
+        #else
+            if let groupId = self.groupId {
+                keychainQuery[kSecAttrAccessGroup as String] = groupId
+            }
+        #endif
         keychainQuery[kSecClass as String] = kSecClassGenericPassword
         keychainQuery[kSecAttrService as String] = self.serviceIdentifier
         keychainQuery[kSecAttrAccount as String] = key + "_" + tokenType.rawValue
@@ -147,9 +172,20 @@ public class KeychainWrap {
     */
     public func read(userAccount: String, tokenType: TokenType) -> String? {
         let keychainQuery = NSMutableDictionary()
-        if let groupId = self.groupId {
-            keychainQuery[kSecAttrAccessGroup as String] = groupId
-        }
+        #if (arch(i386) || arch(x86_64)) && os(iOS)
+            // Ignore the access group if running on the iPhone simulator.
+            //
+            // Apps that are built for the simulator aren't signed, so there's no keychain access group
+            // for the simulator to check. This means that all apps can see all keychain items when run
+            // on the simulator.
+            //
+            // If a SecItem contains an access group attribute, SecItemAdd and SecItemUpdate on the
+            // simulator will return -25243 (errSecNoAccessForItem).
+        #else
+            if let groupId = self.groupId {
+                keychainQuery[kSecAttrAccessGroup as String] = groupId
+            }
+        #endif
         keychainQuery[kSecClass as String] = kSecClassGenericPassword
         keychainQuery[kSecAttrService as String] = self.serviceIdentifier
         keychainQuery[kSecAttrAccount as String] = userAccount + "_" + tokenType.rawValue
