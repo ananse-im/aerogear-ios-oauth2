@@ -192,28 +192,42 @@ open class KeychainWrap {
         keychainQuery[kSecReturnData as String] = true
         keychainQuery[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
 
-        var dataTypeRef: Unmanaged<AnyObject>?
+//        var dataTypeRef: Unmanaged<AnyObject>?
         // Search for the keychain items
-        let status: OSStatus = withUnsafeMutablePointer(to: &dataTypeRef) { SecItemCopyMatching(keychainQuery as CFDictionary, $0) }
-
-        if (status == errSecItemNotFound) {
-            print("\(tokenType.rawValue) not found")
-            return nil
-        } else if (status != errSecSuccess) {
-            print("Error attempting to retrieve \(tokenType.rawValue) with error code \(status) ")
-            return nil
-        }
-
-        let opaque = dataTypeRef?.toOpaque()
+//        let status = SecItemCopyMatching(keychainQuery as CFDictionary, &dataTypeRef as CFTypeRef?)
+        var result: AnyObject?
+        let status = SecItemCopyMatching(keychainQuery as CFDictionary, &result)
         var contentsOfKeychain: String?
-        if let op = opaque {
-            let retrievedData = Unmanaged<Data>.fromOpaque(op).takeUnretainedValue()
-
-            // Convert the data retrieved from the keychain into a string
-            contentsOfKeychain = NSString(data: retrievedData, encoding: String.Encoding.utf8) as? String
-        } else {
+        
+        if status == noErr,
+            let retrievedData = result as? Data
+        {
+            //use `data`...
+            contentsOfKeychain = NSString(data: retrievedData, encoding: String.Encoding.utf8.rawValue) as? String
+        }else {
             print("Nothing was retrieved from the keychain. Status code \(status)")
         }
+        
+//        let status: OSStatus = withUnsafeMutablePointer(to: &dataTypeRef) { SecItemCopyMatching(keychainQuery as CFDictionary, UnsafeMutablePointer($0)) }
+//
+//        if (status == errSecItemNotFound) {
+//            print("\(tokenType.rawValue) not found")
+//            return nil
+//        } else if (status != errSecSuccess) {
+//            print("Error attempting to retrieve \(tokenType.rawValue) with error code \(status) ")
+//            return nil
+//        }
+//
+//        let opaque = dataTypeRef?.toOpaque()
+//        var contentsOfKeychain: String?
+//        if let op = opaque {
+//            let retrievedData = Unmanaged<Data>.fromOpaque(op).takeUnretainedValue()
+//
+//            // Convert the data retrieved from the keychain into a string
+//            contentsOfKeychain = NSString(data: retrievedData, encoding: String.Encoding.utf8) as? String
+//        } else {
+//            print("Nothing was retrieved from the keychain. Status code \(status)")
+//        }
 
         return contentsOfKeychain
     }
@@ -258,16 +272,17 @@ open class TrustedPersistantOAuth2Session: OAuth2Session {
         get {
             let dateAsString = self.keychain.read(self.accountId, tokenType: .ExpirationDate)
             if let unwrappedDate: String = dateAsString {
-                return Date(dateString: unwrappedDate)
+                return NSDate(dateString: unwrappedDate) as Date
             } else {
                 return nil
             }
         }
         set(value) {
             if let unwrappedValue = value {
-                self.keychain.save(self.accountId, tokenType: .ExpirationDate, value: unwrappedValue.toString())
+                let d = unwrappedValue as NSDate
+                _ = self.keychain.save(self.accountId, tokenType: .ExpirationDate, value: d.toString())
             } else {
-                self.keychain.delete(self.accountId, tokenType: .ExpirationDate)
+                _ = self.keychain.delete(self.accountId, tokenType: .ExpirationDate)
             }
         }
     }
@@ -281,9 +296,9 @@ open class TrustedPersistantOAuth2Session: OAuth2Session {
         }
         set(value) {
             if let unwrappedValue = value {
-                self.keychain.save(self.accountId, tokenType: .AccessToken, value: unwrappedValue)
+                _ = self.keychain.save(self.accountId, tokenType: .AccessToken, value: unwrappedValue)
             } else {
-                self.keychain.delete(self.accountId, tokenType: .AccessToken)
+                _ = self.keychain.delete(self.accountId, tokenType: .AccessToken)
             }
         }
     }
@@ -297,9 +312,9 @@ open class TrustedPersistantOAuth2Session: OAuth2Session {
         }
         set(value) {
             if let unwrappedValue = value {
-                self.keychain.save(self.accountId, tokenType: .RefreshToken, value: unwrappedValue)
+                _ = self.keychain.save(self.accountId, tokenType: .RefreshToken, value: unwrappedValue)
             } else {
-                self.keychain.delete(self.accountId, tokenType: .RefreshToken)
+                _ = self.keychain.delete(self.accountId, tokenType: .RefreshToken)
             }
         }
     }
@@ -311,16 +326,17 @@ open class TrustedPersistantOAuth2Session: OAuth2Session {
         get {
             let dateAsString = self.keychain.read(self.accountId, tokenType: .RefreshExpirationDate)
             if let unwrappedDate: String = dateAsString {
-                return Date(dateString: unwrappedDate)
+                return NSDate(dateString: unwrappedDate) as Date
             } else {
                 return nil
             }
         }
         set(value) {
             if let unwrappedValue = value {
-                _ = self.keychain.save(self.accountId, tokenType: .RefreshExpirationDate, value: unwrappedValue.toString())
+                let d = unwrappedValue as NSDate
+                _ = self.keychain.save(self.accountId, tokenType: .RefreshExpirationDate, value: d.toString())
             } else {
-                self.keychain.delete(self.accountId, tokenType: .RefreshExpirationDate)
+                _ = self.keychain.delete(self.accountId, tokenType: .RefreshExpirationDate)
             }
         }
     }

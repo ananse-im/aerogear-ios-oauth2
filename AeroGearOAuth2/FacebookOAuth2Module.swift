@@ -53,13 +53,14 @@ open class FacebookOAuth2Module: OAuth2Module {
 
                 let charSet: NSMutableCharacterSet = NSMutableCharacterSet()
                 charSet.addCharacters(in: "&=")
-                let array = unwrappedResponse.componentsSeparatedByCharactersInSet(charSet)
-                for (index, elt) in array.enumerate() {
+                let unwrappedResponseString = unwrappedResponse as NSString
+                let array = unwrappedResponseString.components(separatedBy: charSet as CharacterSet)
+                for (index, elt) in array.enumerated() {
                     if elt == "access_token" {
                         accessToken = array[index+1]
                     }
                 }
-                for (index, elt) in array.enumerate() {
+                for (index, elt) in array.enumerated() {
                     if elt == "expires" {
                         expiredIn = array[index+1]
                     }

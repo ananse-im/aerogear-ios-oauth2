@@ -16,6 +16,7 @@
 */
 
 import Foundation
+import AeroGearHttp
 
 /**
 Configuration object to setup an OAuth2 module
@@ -118,7 +119,7 @@ open class Config {
         self.accessTokenEndpoint = accessTokenEndpoint
         self.refreshTokenEndpoint = refreshTokenEndpoint
         self.revokeTokenEndpoint = revokeTokenEndpoint
-        self.isOpenIDConnect = isOpenIDConnect ?? false
+        self.isOpenIDConnect = isOpenIDConnect
         self.userInfoEndpoint = userInfoEndpoint
         self.scopes = scopes
         self.clientId = clientId
