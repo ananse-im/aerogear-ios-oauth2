@@ -24,7 +24,7 @@ rather than an external browser approach.
 */
 open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
     /// Login URL for OAuth.
-    var targetURL: URL = URL(string: "")!
+    var targetURL: URL = URL(string: "oauth.com")!
     /// WebView intance used to load login page.
     var webView: UIWebView = UIWebView()
 

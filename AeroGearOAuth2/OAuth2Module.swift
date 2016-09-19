@@ -313,7 +313,7 @@ open class OAuth2Module: AuthzModule {
     // MARK: Internal Methods
 
     func extractCode(_ notification: Notification, completionHandler:  @escaping (AnyObject?, NSError?) -> Void) {
-        let url: URL? = (notification.userInfo)?[UIApplicationLaunchOptionsKey.url] as? URL
+        let url: URL? = (notification.userInfo)?[UIApplicationLaunchOptionsKey.url.rawValue] as? URL
 
         // extract the code from the URL
         let code = self.parametersFromQueryString(url?.query)["code"]
